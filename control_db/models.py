@@ -40,16 +40,6 @@ class Client(models.Model):
 	def __str__(self):
 		return str(self.tg_id)
 
-	@staticmethod
-	async def exists(tg_id):
-		clients = await sync_to_async(Client.objects.filter)(tg_id=tg_id)
-		exists = await sync_to_async(clients.exists)()
-		return exists
-
-	@property
-	def is_staff(self):
-		return self.status in [status[0] for status in Client.STAFF_CHOICES]
-
 	def save(self, *args, **kwargs):
 		super().save(*args, **kwargs)
 

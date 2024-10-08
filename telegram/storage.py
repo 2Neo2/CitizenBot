@@ -7,37 +7,30 @@ from control_db.models import Client
 
 
 class SQLStorage(BaseStorage):
-	def __init__(self):
-		pass
+    def __init__(self):
+        pass
 
-	async def set_state(self, key: StorageKey, state: str = None) -> None:
-		exists = await Client.exists(key.user_id)
-		if exists:
-			client = await Client.objects.aget(tg_id=key.user_id)
-			await client.set_state(state.state if isinstance(state, State) else state)
+    async def get_client(self, key: StorageKey) -> Client:
+        client, _ = await Client.objects.aget_or_create(tg_id=key.user_id)
+        return client
 
-	async def get_state(self, key: StorageKey) -> Optional[str]:
-		exists = await Client.exists(key.user_id)
-		if exists:
-			client = await Client.objects.aget(tg_id=key.user_id)
-			return client.state
+    async def set_state(self, key: StorageKey, state: str = None) -> None:
+        client = await self.get_client(key)
+        await client.set_state(state.state if isinstance(state, State) else state)
 
-		return ''
+    async def get_state(self, key: StorageKey) -> Optional[str]:
+        client = await self.get_client(key)
+        return client.state
 
-	async def set_data(self, key: StorageKey, data: Dict[str, Any]) -> None:
-		exists = await Client.exists(key.user_id)
-		if exists:
-			client = await Client.objects.aget(tg_id=key.user_id)
-			client.data = data
-			await client.asave()
+    async def set_data(self, key: StorageKey, data: Dict[str, Any]) -> None:
+        client = await self.get_client(key)
+        client.data = data
+        await client.asave()
+        print(client.data)
 
-	async def get_data(self, key: StorageKey) -> Dict[str, Any]:
-		exists = await Client.exists(key.user_id)
-		if exists:
-			client = await Client.objects.aget(tg_id=key.user_id)
-			return client.data
-
-		return {}
-
-	async def close(self) -> None:
-		pass
+    async def get_data(self, key: StorageKey) -> Dict[str, Any]:
+        client = await self.get_client(key)
+        return client.data
+    
+    async def close(self) -> None:
+        pass

@@ -98,7 +98,8 @@ async def start_schedule_routes(callback_query: CallbackQuery, state: FSMContext
         
         await state.set_state(forms.ScheduleRouteForm.get_municipality)
         await callback_query.message.answer(mess, reply_markup=keyboard)
-    except Exception:
+    except Exception as error:
+        print(error)
         mess = messages.error_message
         await callback_query.message.answer(mess)
 
@@ -146,8 +147,6 @@ async def choiced_municipality(callback_query: CallbackQuery, callback_data: cal
     })
 
     await state.set_state(forms.ScheduleRouteForm.get_route)
-
-    print(await state.get_data())
     await callback_query.message.answer(mess, reply_markup=keyboard)
     
 

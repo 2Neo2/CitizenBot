@@ -39,8 +39,6 @@ async def input_route_number(callback_query: CallbackQuery, callback_data: callb
         mess = messages.input_route_name_message
 
     data = await state.get_data()
-    print(data)
-
     # data['route_info']['route_name'] = 'Балашиха'
     # response = await get_route_data(data)
 
