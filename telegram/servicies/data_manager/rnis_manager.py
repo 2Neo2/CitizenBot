@@ -33,8 +33,6 @@ async def get_route_data(data):
             response_data = ['items/uuid', 'items/title', 'items/number']
         )
 
-        print(route_data)
-
         return route_data['payload']['items']
 
 
