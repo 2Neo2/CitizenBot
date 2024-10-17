@@ -24,9 +24,7 @@ class SQLStorage(BaseStorage):
 
     async def set_data(self, key: StorageKey, data: Dict[str, Any]) -> None:
         client = await self.get_client(key)
-        client.data = data
-        await client.asave()
-        print(client.data)
+        client.set_data(data)
 
     async def get_data(self, key: StorageKey) -> Dict[str, Any]:
         client = await self.get_client(key)

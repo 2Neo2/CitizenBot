@@ -1,17 +1,20 @@
 from aiogram import Router, F
-from aiogram.types import Message
+from aiogram.types import CallbackQuery
+from aiogram.fsm.context import FSMContext
 
 from .. import buttons
 from . import messages
 
-section_name = '🚌 Показать расписание маршрута'
-
 router = Router()
 #img_path = 'telegram/img/'
 
-@router.message(F.text.in_(section_name))
-async def start_schedule_routes(message: Message):
+@router.callback_query(F.data.in_('route_schedule'))
+async def start_schedule_routes(call: CallbackQuery, state: FSMContext):
 	mess = messages.start_message
-	await message.answer(mess, reply_markup=buttons.get_schedule_date_keyboard())
+	await state.clear()
+	await state.set_data({})
+	
+	await call.message.answer(mess, reply_markup=buttons.get_schedule_date_keyboard())
+	await call.answer()
 	
 

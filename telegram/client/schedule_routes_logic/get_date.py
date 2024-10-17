@@ -1,59 +1,35 @@
 from aiogram import Router, F
-from aiogram.types import Message
 from aiogram.fsm.context import FSMContext
 from aiogram.utils.keyboard import InlineKeyboardBuilder, InlineKeyboardButton
 from aiogram.filters.callback_data import CallbackQuery
+from aiogram_dialog import DialogManager, Dialog, Window, StartMode
+from aiogram_dialog.widgets.kbd import Calendar
+from aiogram_dialog.widgets.text import Const
 
-from ...servicies.rnis import RNIS
+from ...servicies.data_manager.rnis_manager import get_municipality_data
 from .. import buttons, forms, callbacks
 from . import messages
 from datetime import datetime as dt
 
-import os
-from dotenv import load_dotenv
-load_dotenv()
-
 router = Router()
-#img_path = 'telegram/img/'
 
-# МУНИКИ, ГДЕ НЕТ МАРШРУТОВ!!!
-# Ивантеевка МО, Рошаль МО
-# Власиха МО (ЗАТО), Восход (ЗАТО) МО
-# Красноармейск МО, Звенигород МО
-# Молодежный МО (ЗАТО), Солнечногорск МО
-# Кашира МО, Луховицы МО
-# Ликино-Дулево (Орехово-Зуевский ), Озёры ( Коломна )
+ITEMS_PER_PAGE = 7
+
+async def on_date_selected(dialog_manager, date: str, **kwargs):
+    await dialog_manager.current_context().bot.send_message(
+        dialog_manager.current_user.id,
+        f"Вы выбрали дату: {date}"
+    )
 
 
-CLOSE_DATA = [
-	'Москва',
-	'Не используется (для ЖКХ)'
-]
-
-ITEMS_PER_PAGE = 5 
-
-async def get_municipality_data():
-    async with RNIS(login=os.environ['RNIS_LOGIN'], password=os.environ['RNIS_PASSWORD'], token=os.environ['RNIS_TOKEN']) as rnis:
-        dictionary_data = await rnis.API.Dictionary.to_list(
-            dictionary='communal_municipalities',
-            retries=2,
-            error_print=True
+async def create_calendar_dialog():
+    return Dialog(
+        Window(
+            Const("Выберите дату:"),
+            Calendar(id="calendar"),
+            state=forms.DialogDateForm.get_data
         )
-        dictionary_data = dictionary_data['payload']['documents']
-        municipality_data = {
-            normilize_municipality_name(item['name']): item['uuid']
-            for item in dictionary_data if item['name'] not in CLOSE_DATA
-        }
-
-        return municipality_data
-     
-
-def normilize_municipality_name(municipality_name):
-	replace_list = ['МО', 'Городской округ', 'в настоящее время - ', 'городской округ', 'МО', 'Территориальное управление']
-	for replace in replace_list:
-		municipality_name = municipality_name.replace(replace, '')
-	return municipality_name.strip()
-
+    )
 
 def get_municipality_keyboard(municipality_data, page: int = 0):
     builder = InlineKeyboardBuilder()
@@ -70,8 +46,10 @@ def get_municipality_keyboard(municipality_data, page: int = 0):
                 municipality_uuid=uuid
             ).pack()
         )
-    
+
+    builder.adjust(1)
     nav_buttons = []
+
     if page > 0:
         nav_buttons.append(InlineKeyboardButton(
             text='⬅️', callback_data=f"prev_page_{page}"
@@ -85,7 +63,6 @@ def get_municipality_keyboard(municipality_data, page: int = 0):
     if nav_buttons:
         builder.row(*nav_buttons)
         
-    builder.adjust(1)
     return builder.as_markup()
 
 
@@ -97,15 +74,15 @@ async def start_schedule_routes(callback_query: CallbackQuery, state: FSMContext
         keyboard = get_municipality_keyboard(municipality_data, page=0)
         
         await state.set_state(forms.ScheduleRouteForm.get_municipality)
-        await callback_query.message.answer(mess, reply_markup=keyboard)
-    except Exception as error:
-        print(error)
+        await callback_query.message.edit_text(mess, reply_markup=keyboard)
+        await callback_query.answer()
+    except Exception:
         mess = messages.error_message
         await callback_query.message.answer(mess)
 
 
 @router.callback_query(lambda c: c.data.startswith('prev_page_') or c.data.startswith('next_page_'))
-async def handle_pagination(callback_query: CallbackQuery, state: FSMContext):
+async def handle_pagination(callback_query: CallbackQuery):
     try:
         page = int(callback_query.data.split('_')[-1])
         municipality_data = await get_municipality_data()
@@ -145,12 +122,12 @@ async def choiced_municipality(callback_query: CallbackQuery, callback_data: cal
             'municipality_uuid': callback_data.municipality_uuid
         }
     })
-
     await state.set_state(forms.ScheduleRouteForm.get_route)
-    await callback_query.message.answer(mess, reply_markup=keyboard)
+    await callback_query.message.edit_text(mess, reply_markup=keyboard)
+    await callback_query.answer()
     
 
 @router.callback_query(F.data.in_('get_date'))
-async def start_schedule_routes(message: Message):
-	mess = messages.start_message
-	await message.answer(mess, reply_markup=buttons.get_schedule_date_keyboard())
+async def start_schedule_routes(call: CallbackQuery, dialog_manager: DialogManager):
+    calendar_dialog = await create_calendar_dialog()
+    await dialog_manager.start(state=forms.DialogDateForm.get_data, mode=StartMode.NORMAL)

@@ -10,18 +10,11 @@ from .permissions import is_admin
 logger = logging.getLogger('BOT')
 
 
-class ClientMiddleware(BaseMiddleware):
-	async def __call__(self, handler, message, data):
-		permissions = await sync_to_async(is_admin)(message.chat.id)
-		if not permissions:
-			return await handler(message, data)
-
-
 class LoggerMiddleware(BaseMiddleware):
 	async def __call__(self, handler, update, data):
 		loop = asyncio.get_running_loop()
 		start_time = loop.time()
-		state = await data['state'].get_state()
+		state = await data.get('state').get_state() if data.get('state') else None
 		error = None
 
 		match update.event_type:
@@ -36,11 +29,7 @@ class LoggerMiddleware(BaseMiddleware):
 			return await handler(update, data)
 		except Exception as exp:
 			error = exp
-			permissions = await sync_to_async(is_admin)(message.chat.id)
-			if not permissions:
-				return await client_start.start(message, data['state'], error=True)
-			# else:
-			# 	return await admin_start.start(message, data['state'], error=True)
+			return await client_start.start_command_handler(message, data['state'], error=True)
 		finally:
 			duration = round((loop.time() - start_time) * 1000)
 

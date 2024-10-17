@@ -4,19 +4,13 @@ class ScheduleRouteForm(StatesGroup):
     get_municipality = State()
     get_route = State()
 
-# class OrderForm(StatesGroup):
-# 	get_value = State()
-# 	choice_payment_method = State()
-# 	get_address = State()
-# 	accept_pay = State()
+class RouteInfoImputForm(StatesGroup):
+    input_name = State()
+    input_number = State()
+    select_route = State()
 
+class DialogDateForm(StatesGroup):
+    get_data = State()
 
-# class CalcForm(StatesGroup):
-# 	choice_crypt = State()
-# 	get_value = State()
-
-# class CaptchaForm(StatesGroup):
-# 	get_captcha = State()
-
-# class RefWithdrawalForm(StatesGroup):
-# 	accept_withdrawal = State()
+class ConsultationForm(StatesGroup):
+    get_question = State()

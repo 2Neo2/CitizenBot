@@ -1,31 +1,20 @@
-from aiogram.types import KeyboardButton, InlineKeyboardButton, InlineKeyboardMarkup, ReplyKeyboardMarkup
+from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 from .callbacks import RouteInputCallback
 
 
 # Main menu buttons.
-route_schedule_button = KeyboardButton(text='🚌 Показать расписание маршрута')
-cost_travel_bttuon = KeyboardButton(text='💸 Узнать стоимость проезда')
-strelka_question_button = KeyboardButton(text='🚀 Частые вопросы о Стрелке')
-troika_question_button = KeyboardButton(text='🎫 Частые вопросы о Тройке')
-card_question_button = KeyboardButton(text='💳 Частые вопросы о БК')
-general_question_button = KeyboardButton(text='💡 Общие вопросы')
-consultation_button = KeyboardButton(text='🙋🏻‍♂️ Другие вопросы / Консультация')
-info_button = KeyboardButton(text='ℹ️ Справочное инфо')
-
 def get_main_keyboard():
-    keyboard = ReplyKeyboardMarkup(
-        keyboard = [
-            [route_schedule_button],
-            [cost_travel_bttuon],
-            [strelka_question_button],
-            [troika_question_button],
-            [card_question_button],
-            [general_question_button],
-            [consultation_button],
-            [info_button],
-        ],
-        resize_keyboard = True,
-    )
+    buttons = [
+        [InlineKeyboardButton(text='🚌 Показать расписание маршрута', callback_data="route_schedule")],
+        [InlineKeyboardButton(text='💸 Узнать стоимость проезда', callback_data="route_cost")],
+        [InlineKeyboardButton(text='🚀 Частые вопросы о Стрелке', callback_data="strelka_questions")],
+        [InlineKeyboardButton(text='🎫 Частые вопросы о Тройке', callback_data="troika_questions")],
+        [InlineKeyboardButton(text='💳 Частые вопросы о БК', callback_data="card_questions")],
+        [InlineKeyboardButton(text='💡 Общие вопросы', callback_data="general_questions")],
+        [InlineKeyboardButton(text='🙋🏻‍♂️ Другие вопросы / Консультация', callback_data="add_questions")],
+        [InlineKeyboardButton(text='ℹ️ Справочное инфо', callback_data="ref_info")],
+    ]
+    keyboard = InlineKeyboardMarkup(inline_keyboard=buttons)
     return keyboard
 
 # Schedule routes inline buttons.
@@ -47,33 +36,53 @@ def get_route_input_type_keyboard():
 
 # Strelka inline buttons.
 exchenge_section_questions = [
-    'Как поменять карту "Стрелка?"',
-    'Как вернуть карту "Стрелка" и получить залоговую стоимость карты?',
-    'Как сделать возврат средств с карты "Стрелка" на банковский счет?',
-    'Как вернуть денежные средства за билеты/абонементы для проезда на пригородных электричках, записанные на карту "Стрелка"?',
-    'Как перенести остаток денежных средств с карты "Стрелка" на новую карту?',
-    'После обмена сохраняются ли накопленные скидки по карте "Стрелка", если пассажиру выдают новую карту ?'
+    'Как обменять Стрелку?',
+    'Почему могут отказать в обмене?',
+    'Как вернуть Стрелку и получить залоговую стоимость?',
+    'Как сделать возврат средств со Стрелки?',
+    'Как вернуть деньги за билеты на Ж/Д?',
+    'Как перенести деньги со старой Стрелки?'
 ]
 
 tariffs_section_questions = [
-    'Сколько стоит проезд по льготной карте "Стрелка"?',
-    'Сколько стоит проезд по карте "Стрелка" учащегося и "Стрелка" учащегося сельской местности?',
-    '',
-    '',
-    '',
-    ''
+    'Сколько стоит проезд по синей Стрелке?',
+    'Сколько стоит проезд по Стрелке учащегося?',
+    'Сколько стоит проезд по Стрелке льготной?',
 ]
 
-mobile_section_questions = [
-    'Как пользоваться мобильным приложением "Стрелка"?',
-    'Преимущества мобильного приложения "Стрелка"'
+benefits_section_questions = [
+    'Кто может получить Стрелку учащегося?',
+    'Кто может получить Стрелку льготная?',
+    'Как подтвердить право на льготу по Стрелке учащегося?'
 ]
+
+def exchenge_section_keyboard():
+    buttons = []
+    for index, item in enumerate(exchenge_section_questions, start=1):
+        buttons.append([InlineKeyboardButton(text=item, callback_data=RouteInputCallback(action=f'exchange_{index}').pack())])
+    keyboard = InlineKeyboardMarkup(inline_keyboard=buttons)
+    return keyboard
+
+def tariffs_section_keyboard():
+    buttons = []
+    for index, item in enumerate(tariffs_section_questions, start=1):
+        buttons.append([InlineKeyboardButton(text=item, callback_data=RouteInputCallback(action=f'tariffs_{index}').pack())])
+    keyboard = InlineKeyboardMarkup(inline_keyboard=buttons)
+    return keyboard
+
+def benefits_section_keyboard():
+    buttons = []
+    for index, item in enumerate(benefits_section_questions, start=1):
+        buttons.append([InlineKeyboardButton(text=item, callback_data=RouteInputCallback(action=f'tariffs_{index}').pack())])
+    keyboard = InlineKeyboardMarkup(inline_keyboard=buttons)
+    return keyboard
+
 
 def get_sections_strelka_keyboard():
     buttons = [
         [InlineKeyboardButton(text='Обмен и возврат', callback_data="exchange")],
-        [InlineKeyboardButton(text='Тарифы и маршруты', callback_data="tariffs")],
-        [InlineKeyboardButton(text='Мобильное приложение', callback_data="mobile")]
+        [InlineKeyboardButton(text='Тарифы', callback_data="tariffs")],
+        [InlineKeyboardButton(text='Карты льготной тарификации', callback_data="benefits")]
     ]
     keyboard = InlineKeyboardMarkup(inline_keyboard=buttons)
     return keyboard
@@ -97,10 +106,10 @@ def get_troika_questions_keyboard():
 # Bank card inline buttons.
 bank_card_questions = [
     ('Сколько стоит проезд?', 'card_cost'),
-    ('Сколько раз можно оплатить проезд БК на одном рейсе?', 'card_count_pay'),
+    ('Сколько раз можно оплатить проезд?', 'card_count_pay'),
     ('Где можно посмотреть историю поездок?', 'card_history'),
     ('Не удалось оплатить проезд?', 'card_error'),
-    ('Не удалось оплатить проезд БК с помощью телефона?', 'card_error_phone'),
+    ('Не удалось оплатить проезд телефоном?', 'card_error_phone'),
     ('Как погасить задолженность?', 'card_debt'),
 ]
 

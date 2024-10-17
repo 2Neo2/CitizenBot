@@ -24,8 +24,9 @@ os.environ["DJANGO_ALLOW_ASYNC_UNSAFE"] = "true"
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-# SECRET_KEY = 'django-insecure-t^hgl2e(44otl781gp$gi73-)6x_5x#td*_gzwd0^-et&!e323'
+SECRET_KEY = os.environ['SECRET_KEY']
 BOT_TOKEN = os.environ['BOT_TOKEN']
+
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = LOCAL
@@ -48,7 +49,7 @@ INSTALLED_APPS = [
     'django_ckeditor_5'
 ]
 
-# APP_ORDER = ['control', 'general_settings']
+# APP_ORDER = ['control_db', 'general_settings']
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',

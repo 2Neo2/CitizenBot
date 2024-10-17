@@ -1,29 +1,30 @@
-from aiogram import Bot, Dispatcher
+from aiogram import Bot, Dispatcher, Router
 from aiogram.client.bot import DefaultBotProperties
-from aiogram_dialog import setup_dialogs
 from aiogram.types import BotCommand
+from aiogram_dialog import setup_dialogs
 
 import os
 from dotenv import load_dotenv
 load_dotenv()
 
-from . import client
+from . import client, admin
 from .storage import SQLStorage
 from .middlewares import LoggerMiddleware
+from aiogram.fsm.storage.memory import MemoryStorage
 
 import logging
 
 
 bot = Bot(
-	token=os.environ['BOT_TOKEN'],
-	default=DefaultBotProperties(parse_mode='HTML', link_preview_is_disabled=True)
+    token=os.environ['BOT_TOKEN'],
+    default=DefaultBotProperties(parse_mode='HTML', link_preview_is_disabled=True)
 )
-dp = Dispatcher(storage=SQLStorage())
 
+dp = Dispatcher(storage=MemoryStorage())
 
 async def set_bot_commands(bot: Bot):
     commands = [
-        BotCommand(command="/start", description="Запуск"),
+        BotCommand(command="/start", description="Главное меню"),
         BotCommand(command="/contacts", description="Контакты"),
         BotCommand(command="/help", description="Помощь")
     ]
@@ -31,17 +32,19 @@ async def set_bot_commands(bot: Bot):
 
 
 async def polling():
-	logger = logging.getLogger('BOT')
-	logger.debug('RUN POLLING')
+    logger = logging.getLogger('BOT')
+    logger.debug('RUN POLLING')
       
-	await set_bot_commands(bot)
+    await set_bot_commands(bot)
 
-	await dp.start_polling(bot)
+    await dp.start_polling(bot)
 
 
 routers = []
 routers += client.routers
+routers += admin.routers
+
+setup_dialogs(dp)
 
 dp.include_routers(*routers)
-setup_dialogs(dp)
 dp.update.outer_middleware(LoggerMiddleware())
