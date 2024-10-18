@@ -54,7 +54,6 @@ async def get_all_appeals(message: Message, state: FSMContext):
         appeals_count=appeals.count()
     )
     await state.clear()
-    await state.set_data({})
 
     keyboard = get_appeals_keyboard(appeals, page=0)
     await state.set_state(forms.AppealForm.get_appeal)
@@ -112,6 +111,4 @@ async def back_select_appeal(callback_query: CallbackQuery, state: FSMContext):
     )
 
     await state.clear()
-    await state.set_data({})
-
     await callback_query.message.edit_text(mess)

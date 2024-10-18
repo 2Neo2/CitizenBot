@@ -13,8 +13,8 @@ router = Router()
 async def start_troika_questions(call: CallbackQuery, state: FSMContext):
     mess = messages.start_message
     await state.clear()
-    await state.set_data({})
     await call.message.answer(mess, reply_markup=buttons.get_troika_questions_keyboard())
+    await call.answer()
 
 
 @router.callback_query(F.data.in_('troika_cost'))
@@ -24,6 +24,7 @@ async def get_section_date(call: CallbackQuery):
     )
 
     await call.message.answer(mess)
+    await call.answer()
 
 
 @router.callback_query(F.data.in_('troika_loyalty'))
@@ -33,6 +34,7 @@ async def get_section_date(call: CallbackQuery):
     )
 
     await call.message.answer(mess)
+    await call.answer()
 
 
 @router.callback_query(F.data.in_('troika_fill'))
@@ -42,6 +44,7 @@ async def get_section_date(call: CallbackQuery):
     )
 
     await call.message.answer(mess)
+    await call.answer()
 
 
 @router.callback_query(F.data.in_('troika_buy'))
@@ -51,3 +54,4 @@ async def get_section_date(call: CallbackQuery):
     )
 
     await call.message.answer(mess)
+    await call.answer()

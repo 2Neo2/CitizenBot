@@ -29,7 +29,7 @@ async def get_route_data(data):
             status = '1abd2f98-7845-11e7-be3f-3a4e0357cc4a',
             mun = data['route_info']['municipality_uuid'],
             name = data['route_info'].get('route_name'),
-            number = 125,
+            number = data['route_info'].get('route_number'),
             response_data = ['items/uuid', 'items/title', 'items/number']
         )
 

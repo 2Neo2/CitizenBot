@@ -12,7 +12,6 @@ router = Router()
 async def start_schedule_routes(call: CallbackQuery, state: FSMContext):
 	mess = messages.start_message
 	await state.clear()
-	await state.set_data({})
 	
 	await call.message.answer(mess, reply_markup=buttons.get_schedule_date_keyboard())
 	await call.answer()

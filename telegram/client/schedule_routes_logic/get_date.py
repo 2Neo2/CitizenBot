@@ -2,34 +2,16 @@ from aiogram import Router, F
 from aiogram.fsm.context import FSMContext
 from aiogram.utils.keyboard import InlineKeyboardBuilder, InlineKeyboardButton
 from aiogram.filters.callback_data import CallbackQuery
-from aiogram_dialog import DialogManager, Dialog, Window, StartMode
-from aiogram_dialog.widgets.kbd import Calendar
-from aiogram_dialog.widgets.text import Const
+from datetime import datetime
 
 from ...servicies.data_manager.rnis_manager import get_municipality_data
 from .. import buttons, forms, callbacks
-from . import messages
+from . import messages, calendar
 from datetime import datetime as dt
 
 router = Router()
-
 ITEMS_PER_PAGE = 7
 
-async def on_date_selected(dialog_manager, date: str, **kwargs):
-    await dialog_manager.current_context().bot.send_message(
-        dialog_manager.current_user.id,
-        f"Вы выбрали дату: {date}"
-    )
-
-
-async def create_calendar_dialog():
-    return Dialog(
-        Window(
-            Const("Выберите дату:"),
-            Calendar(id="calendar"),
-            state=forms.DialogDateForm.get_data
-        )
-    )
 
 def get_municipality_keyboard(municipality_data, page: int = 0):
     builder = InlineKeyboardBuilder()
@@ -42,7 +24,6 @@ def get_municipality_keyboard(municipality_data, page: int = 0):
         builder.button(
             text=name,
             callback_data=callbacks.ScheduleCallback(
-                date=dt.now().date().strftime("%Y-%m-%d"), 
                 municipality_uuid=uuid
             ).pack()
         )
@@ -74,6 +55,11 @@ async def start_schedule_routes(callback_query: CallbackQuery, state: FSMContext
         keyboard = get_municipality_keyboard(municipality_data, page=0)
         
         await state.set_state(forms.ScheduleRouteForm.get_municipality)
+        await state.set_data({
+            "route_info": {
+                "date": dt.now().date().strftime("%Y-%m-%d")
+            }
+        })
         await callback_query.message.edit_text(mess, reply_markup=keyboard)
         await callback_query.answer()
     except Exception:
@@ -104,6 +90,7 @@ async def handle_pagination(callback_query: CallbackQuery):
 async def choiced_municipality(callback_query: CallbackQuery, callback_data: callbacks.ScheduleCallback, state: FSMContext):
     municipality_name = ''
     municipality_data = await get_municipality_data()
+    data = await state.get_data()
 
     for key, value in municipality_data.items():
         if value == callback_data.municipality_uuid:
@@ -111,23 +98,68 @@ async def choiced_municipality(callback_query: CallbackQuery, callback_data: cal
             break
 
     mess = messages.type_input_route_message.format(
-        municipality_name = municipality_name
+        municipality_name = municipality_name,
+        date=data['route_info']['date']
     )
     keyboard = buttons.get_route_input_type_keyboard()
+    data['route_info']['municipality_name'] = municipality_name
+    data['route_info']['municipality_uuid'] = callback_data.municipality_uuid
 
-    await state.set_data({
-        'route_info' : {
-            'date': callback_data.date,
-            'municipality_name': municipality_name,
-            'municipality_uuid': callback_data.municipality_uuid
-        }
-    })
+    await state.set_data(data)
     await state.set_state(forms.ScheduleRouteForm.get_route)
     await callback_query.message.edit_text(mess, reply_markup=keyboard)
     await callback_query.answer()
     
 
 @router.callback_query(F.data.in_('get_date'))
-async def start_schedule_routes(call: CallbackQuery, dialog_manager: DialogManager):
-    calendar_dialog = await create_calendar_dialog()
-    await dialog_manager.start(state=forms.DialogDateForm.get_data, mode=StartMode.NORMAL)
+async def start_schedule_routes(callback_query: CallbackQuery):
+    current_date = datetime.now()
+    year = current_date.year
+    month = current_date.month
+    mess = messages.date_choice_message
+    await callback_query.message.edit_text(mess, reply_markup=calendar.generate_calendar_keyboard(year, month))
+    await callback_query.answer()
+
+
+@router.callback_query(lambda c: c.data and (c.data.startswith('prev_month:') or c.data.startswith('next_month:')))
+async def process_month_change(callback_query: CallbackQuery):
+    action, year, month = callback_query.data.split(":")
+    year = int(year)
+    month = int(month)
+
+    if action == 'prev_month':
+        if month == 1:
+            month = 12
+            year -= 1
+        else:
+            month -= 1
+    elif action == 'next_month':
+        if month == 12:
+            month = 1
+            year += 1
+        else:
+            month += 1
+
+    await callback_query.message.edit_reply_markup(reply_markup=calendar.generate_calendar_keyboard(year, month))
+    await callback_query.answer()
+
+
+@router.callback_query(lambda c: c.data and c.data.startswith('day:'))
+async def process_day_selection(callback_query: CallbackQuery, state: FSMContext):
+    _, year, month, day = callback_query.data.split(":")
+    try: 
+        mess = messages.municipality_message
+        municipality_data = await get_municipality_data()
+        keyboard = get_municipality_keyboard(municipality_data, page=0)
+        
+        await state.set_state(forms.ScheduleRouteForm.get_municipality)
+        await state.set_data({
+            "route_info": {
+                "date": f'{year}-{month}-{day}'
+            }
+        })
+        await callback_query.message.edit_text(mess, reply_markup=keyboard)
+        await callback_query.answer()
+    except Exception:
+        mess = messages.error_message
+        await callback_query.message.answer(mess)

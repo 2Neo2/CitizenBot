@@ -74,7 +74,8 @@ async def input_answer(callback_query: CallbackQuery, callback_data: callbacks.A
         appeal_text=appeal.appeal,
         client_name=appeal.client.username
     )
-    await callback_query.message.edit_text(mess)
+    keyboard = buttons.get_back_keyboard()
+    await callback_query.message.edit_text(mess, reply_markup=keyboard)
     await callback_query.answer()
 
 
@@ -111,10 +112,29 @@ async def send_answer(callback_query: CallbackQuery, state: FSMContext):
 
     mess = messages.end_appeal_message
     await callback_query.message.edit_text(mess)
+    await callback_query.answer()
 
 
 @router.callback_query(forms.AppealForm.input_answer, lambda c: c.data.startswith('cancel'))
 async def cancel_answer(callback_query: CallbackQuery, state: FSMContext):
     await state.clear()
     mess = messages.cancel_message
-    await callback_query.message.edit_text(mess, reply_markup=buttons.start_menu)
+    await callback_query.message.answer(mess)
+    await callback_query.answer()
+
+
+
+@router.callback_query(forms.AppealForm.input_answer, lambda c: c.data.startswith('back'))
+async def cancel_answer(callback_query: CallbackQuery, state: FSMContext):
+    admin = Client.objects.get(tg_id=callback_query.from_user.id)
+    appeals = ClientAppeal.objects.filter(consultant=admin, status='work')
+    mess = messages.start_message.format(
+        appeals_count=appeals.count()
+    )
+    await state.clear()
+
+    keyboard = get_appeals_keyboard(appeals, page=0)
+    await state.set_state(forms.AppealForm.start_answer_appeal)
+
+    await callback_query.message.edit_text(mess, reply_markup=keyboard)
+    await callback_query.answer()

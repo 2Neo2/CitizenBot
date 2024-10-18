@@ -1,7 +1,6 @@
-from aiogram import Bot, Dispatcher, Router
+from aiogram import Bot, Dispatcher
 from aiogram.client.bot import DefaultBotProperties
 from aiogram.types import BotCommand
-from aiogram_dialog import setup_dialogs
 
 import os
 from dotenv import load_dotenv
@@ -10,7 +9,6 @@ load_dotenv()
 from . import client, admin
 from .storage import SQLStorage
 from .middlewares import LoggerMiddleware
-from aiogram.fsm.storage.memory import MemoryStorage
 
 import logging
 
@@ -20,7 +18,7 @@ bot = Bot(
     default=DefaultBotProperties(parse_mode='HTML', link_preview_is_disabled=True)
 )
 
-dp = Dispatcher(storage=MemoryStorage())
+dp = Dispatcher(storage=SQLStorage())
 
 async def set_bot_commands(bot: Bot):
     commands = [
@@ -43,8 +41,6 @@ async def polling():
 routers = []
 routers += client.routers
 routers += admin.routers
-
-setup_dialogs(dp)
 
 dp.include_routers(*routers)
 dp.update.outer_middleware(LoggerMiddleware())

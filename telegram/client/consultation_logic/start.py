@@ -13,6 +13,8 @@ router = Router()
 @router.callback_query(F.data.in_('add_questions'))
 async def start_consultation(call: CallbackQuery, state: FSMContext):
     mess = messages.start_question_message
+    await state.clear()
+    
     await state.set_state(forms.ConsultationForm.get_question)
     await call.message.answer(mess)
     await call.answer()

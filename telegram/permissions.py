@@ -3,9 +3,7 @@ from general_settings.models import GeneralSettings
 
 
 def is_admin(tg_id):
-	print("IS ADMIN")
 	settings = GeneralSettings.objects.first()
-	
 	client = Client.objects.filter(tg_id=tg_id).first()
 	
 	if not client:

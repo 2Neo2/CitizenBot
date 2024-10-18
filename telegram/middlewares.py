@@ -1,10 +1,6 @@
 from aiogram import BaseMiddleware
-
 import asyncio, logging
-from asgiref.sync import sync_to_async
-
 from .client import start as client_start
-from .permissions import is_admin
 
 
 logger = logging.getLogger('BOT')

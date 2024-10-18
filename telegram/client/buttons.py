@@ -1,5 +1,5 @@
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
-from .callbacks import RouteInputCallback
+from .callbacks import StrelkaQuestionCallback, RouteInputCallback
 
 
 # Main menu buttons.
@@ -59,21 +59,21 @@ benefits_section_questions = [
 def exchenge_section_keyboard():
     buttons = []
     for index, item in enumerate(exchenge_section_questions, start=1):
-        buttons.append([InlineKeyboardButton(text=item, callback_data=RouteInputCallback(action=f'exchange_{index}').pack())])
+        buttons.append([InlineKeyboardButton(text=item, callback_data=StrelkaQuestionCallback(number_question=f'exchange_{index}').pack())])
     keyboard = InlineKeyboardMarkup(inline_keyboard=buttons)
     return keyboard
 
 def tariffs_section_keyboard():
     buttons = []
     for index, item in enumerate(tariffs_section_questions, start=1):
-        buttons.append([InlineKeyboardButton(text=item, callback_data=RouteInputCallback(action=f'tariffs_{index}').pack())])
+        buttons.append([InlineKeyboardButton(text=item, callback_data=StrelkaQuestionCallback(number_question=f'tariffs_{index}').pack())])
     keyboard = InlineKeyboardMarkup(inline_keyboard=buttons)
     return keyboard
 
 def benefits_section_keyboard():
     buttons = []
     for index, item in enumerate(benefits_section_questions, start=1):
-        buttons.append([InlineKeyboardButton(text=item, callback_data=RouteInputCallback(action=f'tariffs_{index}').pack())])
+        buttons.append([InlineKeyboardButton(text=item, callback_data=StrelkaQuestionCallback(number_question=f'benefits_{index}').pack())])
     keyboard = InlineKeyboardMarkup(inline_keyboard=buttons)
     return keyboard
 

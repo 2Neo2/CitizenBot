@@ -1,5 +1,4 @@
 from django.db import models
-from asgiref.sync import sync_to_async
 from django.utils.translation import gettext_lazy as _
 
 class Client(models.Model):
@@ -29,6 +28,9 @@ class Client(models.Model):
         verbose_name=_('Статус')
     )
 
+    state = models.CharField(max_length=255, null=True, blank=True)
+    data = models.JSONField(null=True, blank=True)
+
     class Meta:
         verbose_name = _('Пользователя')
         verbose_name_plural = _('Пользователи')
@@ -36,20 +38,17 @@ class Client(models.Model):
     def __str__(self):
         return str(self.tg_id)
 
-    # def save(self, *args, **kwargs):
-    # 	super().save(*args, **kwargs)
+    async def set_state(self, state):
+        self.state = state
+        await self.asave()
 
-    # async def set_state(self, state):
-    #     self.state = state
-    #     await self.asave()
+    async def set_data(self, data):
+        self.data = data
+        await self.asave()
 
-    # async def set_data(self, data):
-    #     self.data = data
-    #     await self.asave()
-
-    # async def clear_state(self):
-    #     self.state = None
-    #     await self.asave()
+    async def clear_state(self):
+        self.state = None
+        await self.asave()
 
 
 class ClientAppeal(models.Model):

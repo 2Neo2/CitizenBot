@@ -13,7 +13,6 @@ router = Router()
 async def start_bank_card_questions(call: CallbackQuery, state: FSMContext):
     mess = messages.start_message
     await state.clear()
-    await state.set_data({})
     await call.message.answer(mess, reply_markup=buttons.get_bank_card_questions_keyboard())
     await call.answer()
 
@@ -25,6 +24,7 @@ async def get_section_date(call: CallbackQuery):
     )
 
     await call.message.answer(mess)
+    await call.answer()
 
 
 @router.callback_query(F.data.in_('card_count_pay'))
@@ -34,6 +34,7 @@ async def get_section_date(call: CallbackQuery):
     )
 
     await call.message.answer(mess)
+    await call.answer()
 
 @router.callback_query(F.data.in_('card_history'))
 async def get_section_date(call: CallbackQuery):
@@ -42,6 +43,7 @@ async def get_section_date(call: CallbackQuery):
     )
 
     await call.message.answer(mess)
+    await call.answer()
 
 @router.callback_query(F.data.in_('card_error'))
 async def get_section_date(call: CallbackQuery):
@@ -50,6 +52,7 @@ async def get_section_date(call: CallbackQuery):
     )
 
     await call.message.answer(mess)
+    await call.answer()
 
 
 @router.callback_query(F.data.in_('card_error_phone'))
@@ -59,6 +62,7 @@ async def get_section_date(call: CallbackQuery):
     )
 
     await call.message.answer(mess)
+    await call.answer()
 
 
 @router.callback_query(F.data.in_('card_debt'))
@@ -68,3 +72,4 @@ async def get_section_date(call: CallbackQuery):
     )
 
     await call.message.answer(mess)
+    await call.answer()

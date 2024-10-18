@@ -26,3 +26,10 @@ def get_send_keyboard(appeal_id):
     ]
     keyboard = InlineKeyboardMarkup(inline_keyboard=buttons)
     return keyboard
+
+def get_back_keyboard():
+    buttons = [
+        [InlineKeyboardButton(text='Назад', callback_data='back')]
+    ]
+    keyboard = InlineKeyboardMarkup(inline_keyboard=buttons)
+    return keyboard

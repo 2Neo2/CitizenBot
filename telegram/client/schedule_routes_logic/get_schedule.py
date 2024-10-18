@@ -8,7 +8,6 @@ from openpyxl.utils import get_column_letter
 from openpyxl.styles import PatternFill, Font, Alignment, Border, Side
 from openpyxl.drawing.image import Image
 from datetime import datetime, timedelta
-from io import BytesIO
 
 from ...servicies.data_manager.rnis_manager import get_route_data, get_schedule_data, get_bus_stop_data
 from .. import forms, callbacks, validators
