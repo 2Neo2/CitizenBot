@@ -8,8 +8,9 @@ from openpyxl.utils import get_column_letter
 from openpyxl.styles import PatternFill, Font, Alignment, Border, Side
 from openpyxl.drawing.image import Image
 from datetime import datetime, timedelta
+import re
 
-from ...servicies.data_manager.rnis_manager import get_route_data, get_schedule_data, get_bus_stop_data
+from ...servicies.data_manager.rnis_manager import get_route_data, get_schedule_data, get_bus_stop_data, get_route_name_by_uuid
 from .. import forms, callbacks, validators
 from . import messages
 
@@ -85,7 +86,7 @@ def configure_excel_bytes(data):
     ws['H3'].font = Font(name='Times New Roman', size=24, bold=True)
     ws['H3'].alignment = Alignment(horizontal='left', vertical='center')
 
-    ws['L3'] = int(data['route_number'])
+    ws['L3'] = data['route_number']
     ws['L3'].font = Font(name='Times New Roman', size=24, bold=True)
     ws['L3'].alignment = Alignment(horizontal='center', vertical='center')
 
@@ -241,9 +242,6 @@ async def input_route_data(callback_query: CallbackQuery, callback_data: callbac
         await state.set_state(forms.RouteInfoImputForm.input_name)
         mess = messages.input_route_name_message
 
-    data = await state.get_data()
-    print(data)
-
     await callback_query.message.edit_text(mess)
 
 
@@ -282,6 +280,7 @@ async def input_route_number(message: Message, state: FSMContext):
 async def handle_route_pagination(callback_query: CallbackQuery, state: FSMContext):
     page = int(callback_query.data.split('_')[-1])
     routes_data = await state.get_data()
+
     if 'prev_route_page' in callback_query.data:
         new_page = page - 1
     elif 'next_route_page' in callback_query.data:
@@ -298,6 +297,7 @@ async def input_route_name(message: Message, state: FSMContext):
     data = await state.get_data()
     data['route_info']['route_name'] = message.text
     route_data = await get_route_data(data)
+
     if len(route_data) != 0:
         data['route_info']['route_request_items'] = route_data
 
@@ -316,12 +316,13 @@ async def input_route_name(message: Message, state: FSMContext):
 @router.callback_query(forms.RouteInfoImputForm.select_route, callbacks.RouteInfoCallback.filter())
 async def get_schedule_route_data(callback_query: CallbackQuery, callback_data: callbacks.RouteInfoCallback, state: FSMContext):
     data = await state.get_data()
-
-    route = data['route_info']['route_name'] if data['route_info'].get('route_name', None) else data['route_info']['route_number']
+    
+    route = await  get_route_name_by_uuid(callback_data.route_uuid)
+    date = data['route_info']['date']
     municipality_name = data['route_info']['municipality_name']
-    mess = messages.waiting_schedule_message.format(route=route, municipality_name=municipality_name)
+    mess = messages.waiting_schedule_message.format(route=route, municipality_name=municipality_name, date=date)
 
-    await callback_query.message.edit_text(mess)
+    await callback_query.message.answer(mess)
 
     data['route_info']['route_uuid'] = callback_data.route_uuid
 
@@ -329,7 +330,8 @@ async def get_schedule_route_data(callback_query: CallbackQuery, callback_data: 
     parsed_schedule_data = await get_parsed_schedule_data(schedule_data)
 
     xslsx_bytes = configure_excel_bytes(parsed_schedule_data)
-
+    await state.clear()
+    
     await callback_query.message.answer_document(
                     document=FSInputFile(xslsx_bytes, filename=f'{route}-{municipality_name}.xlsx'),
                     caption="Расписание",

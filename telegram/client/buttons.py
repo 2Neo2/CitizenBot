@@ -38,42 +38,54 @@ def get_route_input_type_keyboard():
 exchenge_section_questions = [
     'Как обменять Стрелку?',
     'Почему могут отказать в обмене?',
-    'Как вернуть Стрелку и получить залоговую стоимость?',
+    'Как получить залоговую стоимость Стрелки?',
     'Как сделать возврат средств со Стрелки?',
     'Как вернуть деньги за билеты на Ж/Д?',
-    'Как перенести деньги со старой Стрелки?'
+    'Как перенести деньги со старой Стрелки?',
+    '⬅️ Назад'
 ]
 
 tariffs_section_questions = [
     'Сколько стоит проезд по синей Стрелке?',
     'Сколько стоит проезд по Стрелке учащегося?',
     'Сколько стоит проезд по Стрелке льготной?',
+    '⬅️ Назад'
 ]
 
 benefits_section_questions = [
     'Кто может получить Стрелку учащегося?',
     'Кто может получить Стрелку льготная?',
-    'Как подтвердить право на льготу по Стрелке учащегося?'
+    'Как получить льготу по Стрелке учащегося?',
+    '⬅️ Назад'
 ]
 
 def exchenge_section_keyboard():
     buttons = []
     for index, item in enumerate(exchenge_section_questions, start=1):
-        buttons.append([InlineKeyboardButton(text=item, callback_data=StrelkaQuestionCallback(number_question=f'exchange_{index}').pack())])
+        if 'Назад' in item:
+            buttons.append([InlineKeyboardButton(text=item, callback_data='strelka_back')])
+        else:
+            buttons.append([InlineKeyboardButton(text=item, callback_data=StrelkaQuestionCallback(number_question=f'exchange_{index}').pack())])
     keyboard = InlineKeyboardMarkup(inline_keyboard=buttons)
     return keyboard
 
 def tariffs_section_keyboard():
     buttons = []
     for index, item in enumerate(tariffs_section_questions, start=1):
-        buttons.append([InlineKeyboardButton(text=item, callback_data=StrelkaQuestionCallback(number_question=f'tariffs_{index}').pack())])
+        if 'Назад' in item:
+            buttons.append([InlineKeyboardButton(text=item, callback_data='strelka_back')])
+        else:
+            buttons.append([InlineKeyboardButton(text=item, callback_data=StrelkaQuestionCallback(number_question=f'tariffs_{index}').pack())])
     keyboard = InlineKeyboardMarkup(inline_keyboard=buttons)
     return keyboard
 
 def benefits_section_keyboard():
     buttons = []
     for index, item in enumerate(benefits_section_questions, start=1):
-        buttons.append([InlineKeyboardButton(text=item, callback_data=StrelkaQuestionCallback(number_question=f'benefits_{index}').pack())])
+        if 'Назад' in item:
+            buttons.append([InlineKeyboardButton(text=item, callback_data='strelka_back')])
+        else:    
+            buttons.append([InlineKeyboardButton(text=item, callback_data=StrelkaQuestionCallback(number_question=f'benefits_{index}').pack())])
     keyboard = InlineKeyboardMarkup(inline_keyboard=buttons)
     return keyboard
 

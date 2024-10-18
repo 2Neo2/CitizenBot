@@ -15,7 +15,12 @@ empty_routes_message = '''
 '''
 
 waiting_schedule_message = '''
-⌛ Формирую расписание для {route} в ГО {municipality_name}
+⌛ Формирую расписание для
+<b>{route}</b>
+в <b>ГО {municipality_name}</b>
+за <b>{date}</b>
+
+<b>Винмание!</b> Возможно ожидание до 5-ти минут.
 '''
 
 error_message = '''

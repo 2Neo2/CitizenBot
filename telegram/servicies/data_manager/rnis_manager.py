@@ -34,6 +34,19 @@ async def get_route_data(data):
         )
 
         return route_data['payload']['items']
+    
+
+async def get_route_name_by_uuid(route_uuid):
+     async with RNIS(login=os.environ['RNIS_LOGIN'], password=os.environ['RNIS_PASSWORD'], token=os.environ['RNIS_TOKEN']) as rnis:
+        route_data = await rnis.API.Geo.Route.read(
+            all_pages=True,
+            delay=4,
+            limit=50,
+            uuid=route_uuid,
+            response_data = []
+        )
+
+        return route_data['payload']['title']
 
 
 async def get_schedule_data(data):

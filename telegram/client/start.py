@@ -15,6 +15,7 @@ img_path = 'telegram/img/main_logo.png'
 @router.message(Command('start'))
 async def start_command_handler(message: Message, state: FSMContext, error=False):
     client, new = await Client.objects.aget_or_create(tg_id=message.chat.id)
+    await state.clear()
 
     if is_admin(client.tg_id):
         if error:
